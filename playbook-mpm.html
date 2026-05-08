@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playbook MPM — Leandro Garozi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;--bg4:#2e2e2e;
+  --accent:#c8ff00;--accent2:#ff6b35;
+  --text:#f0f0f0;--text2:#999;--text3:#666;
+  --border:#333;--border2:#444;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --radius:10px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px}
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.logo{font-size:13px;font-weight:500;color:var(--accent);font-family:var(--mono);letter-spacing:.05em}
+.btn-sm{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--font);transition:all .15s}
+.btn-sm:hover{background:var(--bg3);color:var(--text)}
+.btn-sm.accent{background:var(--accent);color:#000;border-color:var(--accent)}
+.btn-sm.accent:hover{opacity:.9}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:220px;border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar-title{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:14px 16px 8px}
+.client-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.client-item:hover{background:var(--bg3)}
+.client-item.active{background:var(--bg3);border-left-color:var(--accent)}
+.client-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.client-name{font-size:13px;font-weight:500;color:var(--text)}
+.client-tag{font-size:10px;color:var(--text3);margin-top:1px}
+.add-client{margin:8px 12px 16px;padding:8px;border-radius:8px;border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font);width:calc(100% - 24px);transition:all .15s}
+.add-client:hover{border-color:var(--accent);color:var(--accent)}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.sec-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+
+/* PROFILE BAR */
+.profile-bar{background:var(--bg2);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:16px;border:1px solid var(--border);flex-wrap:wrap}
+.profile-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex-shrink:0}
+.profile-name{font-size:16px;font-weight:600;color:var(--text)}
+.profile-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.profile-tags{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.ptag{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+.ptag.dom{background:rgba(255,107,53,.15);color:#ff6b35;border:1px solid rgba(255,107,53,.3)}
+.ptag.mot{background:rgba(200,255,0,.1);color:var(--accent);border:1px solid rgba(200,255,0,.25)}
+.ptag.warn{background:rgba(255,60,60,.1);color:#ff6060;border:1px solid rgba(255,60,60,.25)}
+.edit-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.edit-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:6px}
+.step{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:all .15s}
+.step:hover{border-color:var(--border2);background:var(--bg3)}
+.step.done{border-color:var(--accent);opacity:.5}
+.step.active-step{border-color:var(--accent);background:rgba(200,255,0,.05)}
+.step-n{width:22px;height:22px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text2);flex-shrink:0;margin-top:1px;transition:all .15s}
+.step.done .step-n,.step.active-step .step-n{background:var(--accent);color:#000}
+.step-title{font-size:13px;font-weight:500;color:var(--text)}
+.step-hint{font-size:12px;color:var(--text3);margin-top:2px;line-height:1.5}
+.step-quote{font-size:13px;color:var(--text2);line-height:1.7;margin-top:8px;padding:10px 12px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--accent);display:none}
+.step.active-step .step-quote{display:block}
+
+/* PROPOSALS */
+.proposals{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.proposals{grid-template-columns:1fr}}
+.prop{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;transition:all .15s}
+.prop.recommended{border-color:var(--accent)}
+.prop-badge{font-size:10px;color:var(--accent);font-family:var(--mono);letter-spacing:.05em;margin-bottom:6px}
+.prop-price{font-size:20px;font-weight:600;color:var(--text)}
+.prop-items{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.prop-item{font-size:12px;color:var(--text3);display:flex;gap:6px;align-items:flex-start}
+.prop-item::before{content:'→';color:var(--accent);flex-shrink:0}
+
+/* OBJECTIONS */
+.obj-grid{display:flex;flex-direction:column;gap:6px}
+.obj{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .15s}
+.obj:hover{border-color:var(--border2)}
+.obj.open{border-color:var(--accent2)}
+.obj-trigger{padding:12px 14px;font-size:13px;font-weight:500;color:var(--text);display:flex;justify-content:space-between;align-items:center}
+.obj-arrow{font-size:12px;color:var(--text3);transition:transform .2s}
+.obj.open .obj-arrow{transform:rotate(180deg);color:var(--accent2)}
+.obj-reply{display:none;padding:0 14px 12px;font-size:13px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border)}
+.obj.open .obj-reply{display:block;padding-top:10px}
+
+/* RESET BTN */
+.reset-btn{margin-top:4px;padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font);width:100%;transition:all .15s}
+.reset-btn:hover{border-color:var(--border2);color:var(--text2)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;padding:20px}
+.overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.field{margin-bottom:12px}
+.field label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border .15s}
+.field textarea{min-height:70px;resize:vertical;line-height:1.5}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.modal-actions .danger{color:#ff6060;border-color:rgba(255,96,96,.3)}
+.modal-actions .danger:hover{background:rgba(255,96,96,.1)}
+
+/* EMPTY */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--text3);text-align:center;gap:8px;flex:1}
+
+/* TIPS ROW */
+.tips-row{display:flex;gap:6px;flex-wrap:wrap}
+.tip-tag{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+
+/* MOBILE SIDEBAR TOGGLE */
+@media(max-width:640px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-toggle{display:flex}
+}
+@media(min-width:641px){.mobile-toggle{display:none}}
+.mobile-toggle{align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);font-size:16px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="mobile-toggle" id="mob-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="logo">PLAYBOOK / MPM</div>
+    </div>
+    <button class="btn-sm accent" onclick="openNewClient()">+ Novo cliente</button>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-title">Clientes</div>
+      <div id="client-list"></div>
+      <button class="add-client" onclick="openNewClient()">+ adicionar cliente</button>
+    </div>
+    <div class="main" id="main-content">
+      <div class="empty">
+        <div style="font-size:32px;margin-bottom:4px">◎</div>
+        <div style="font-size:14px;color:var(--text2)">Selecione um cliente para começar</div>
+        <div style="font-size:12px">ou adicione um novo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title">Novo cliente</h3>
+    <div class="field"><label>Nome</label><input id="f-name" placeholder="Ex: Daniel Barber"></div>
+    <div class="field"><label>Negócio</label><input id="f-biz" placeholder="Ex: Barbearia Daniel"></div>
+    <div class="field"><label>Perfil comportamental</label>
+      <select id="f-profile">
+        <option value="Dominante">Dominante (D)</option>
+        <option value="Influente">Influente (I)</option>
+        <option value="Estável">Estável (S)</option>
+        <option value="Cauteloso">Cauteloso (C)</option>
+      </select>
+    </div>
+    <div class="field"><label>Motivação de compra</label><input id="f-mot" placeholder="Ex: Resultado e controle"></div>
+    <div class="field"><label>O que ele odeia</label><input id="f-hate" placeholder="Ex: Perda de tempo"></div>
+    <div class="field"><label>Dor principal</label><textarea id="f-pain" placeholder="Descreva o problema principal dele..."></textarea></div>
+    <div class="field"><label>Frase de abertura da call</label><textarea id="f-opening" placeholder="Como você valida a dor dele logo no início..."></textarea></div>
+    <div class="field"><label>Proposta 1 — nome e valor</label><input id="f-p1name" placeholder="Ex: Entrada — R$ 2.000"></div>
+    <div class="field"><label>Proposta 1 — itens (um por linha)</label><textarea id="f-p1desc" placeholder="Perfil + devolutiva&#10;Relatório da esposa&#10;Troca por 1 ano de barbearia"></textarea></div>
+    <div class="field"><label>Proposta 2 — nome e valor</label><input id="f-p2name" placeholder="Ex: Completo — R$ 4.200"></div>
+    <div class="field"><label>Proposta 2 — itens (um por linha)</label><textarea id="f-p2desc" placeholder="Mapeamento da equipe&#10;Devolutiva + guia de gestão&#10;Encontro presencial no Studio"></textarea></div>
+    <div class="field">
+      <label>Objeções (uma por linha)</label>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Formato: objeção | resposta</div>
+      <textarea id="f-objs" style="min-height:110px" placeholder='"Tá caro" | Quanto você já perdeu com contratação errada?&#10;"Deixa eu pensar" | O que falta pra decidir agora?'></textarea>
+    </div>
+    <div class="modal-actions" id="modal-actions">
+      <button class="btn-sm" onclick="closeModal()">Cancelar</button>
+      <button class="btn-sm accent" onclick="saveClient()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS=['#ff6b35','#c8ff00','#4fc3f7','#ce93d8','#80cbc4','#ffb74d'];
+const PROFILE_TIPS={
+  'Dominante':['Direto ao ponto','Fale em resultado','Mostre ROI','Evite detalhes técnicos','Crie urgência real'],
+  'Influente':['Seja entusiasmado','Use histórias','Fale de impacto','Deixe ele falar','Envolva emocionalmente'],
+  'Estável':['Seja paciente','Mostre segurança','Evite pressão','Dê tempo pra decidir','Use depoimentos'],
+  'Cauteloso':['Apresente dados','Seja detalhado','Responda tudo','Dê garantias','Não apresse a decisão']
+};
+
+const STEPS_BASE=[
+  {title:'Validar a dor',hint:'Ele precisa sentir que você já entende ele antes de qualquer coisa',useOpening:true},
+  {title:'Ampliar a dor',hint:'Faça ele sentir o peso do problema sem resolver',quote:'"Isso não some sozinho. Quanto mais o tempo passa, mais difícil fica mudar o padrão."'},
+  {title:'Apresentar resultado',hint:'Fale o que ele vai GANHAR — nunca liste serviços',quote:'"Você vai saber exatamente quem você é como líder e como falar com cada pessoa da equipe do jeito que ela precisa ouvir."'},
+  {title:'Apresentar propostas',hint:'Mostre as duas opções — empurre a maior',quote:''},
+  {title:'Fechar',hint:'Nunca espere ele decidir sozinho — pergunte',quote:'"Qual faz mais sentido pra você agora — começar pelo pessoal ou já resolver a equipe de uma vez?"'},
+];
+
+let clients=JSON.parse(localStorage.getItem('mpm_clients')||'null')||[
+  {
+    id:1,name:'Daniel Barber',biz:'Barbearia Daniel',
+    profile:'Dominante',color:'#ff6b35',
+    mot:'Resultado e poder',hate:'Perda de tempo / ineficiência',
+    pain:'Equipe não o acompanha. Só age sob pressão. Quer elevar a competitividade da equipe.',
+    opening:'Daniel, você me falou que a equipe não te acompanha e que você só age na pressão. Isso tá custando tempo e energia todo dia — certo?',
+    p1name:'Entrada — R$ 2.000',
+    p1desc:'Perfil + devolutiva do Daniel\nPerfil da esposa\nRelatório do casal — como se complementam\nTroca por 1 ano de barbearia',
+    p2name:'Completo — R$ 4.200',
+    p2desc:'Mapeamento Daniel + equipe (5 perfis)\nDevolutiva individual com Daniel\nGuia de gestão por perfil\nEncontro presencial no Studio com a equipe',
+    objs:[
+      {q:'"Tá caro"',a:'Quanto você já perdeu com alguém que não performou ou que teve que demitir? Uma contratação errada custa muito mais. Aqui você tá investindo em não repetir esse erro.'},
+      {q:'"Deixa eu pensar"',a:'Claro. Só me fala — o que falta pra você decidir? Se for dúvida, a gente resolve agora. Se for valor, posso parcelar em 2x.'},
+      {q:'"Não tenho dinheiro agora"',a:'Sem problema. Posso fazer em 2x — metade agora, metade depois do primeiro encontro. Você já sente o resultado antes de pagar o restante.'},
+      {q:'"Não sei se vai funcionar"',a:'Por isso a Proposta 1 existe — você começa menor, vê o resultado com você mesmo, e decide se quer ir pra dentro da empresa.'}
+    ],
+    steps:[]
+  }
+];
+
+let activeId=null,editingId=null;
+
+function save(){localStorage.setItem('mpm_clients',JSON.stringify(clients))}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function renderClients(){
+  document.getElementById('client-list').innerHTML=clients.map(c=>`
+    <div class="client-item ${c.id===activeId?'active':''}" onclick="selectClient(${c.id})">
+      <div class="client-avatar" style="background:${c.color}22;color:${c.color}">${initials(c.name)}</div>
+      <div><div class="client-name">${c.name}</div><div class="client-tag">${c.profile}</div></div>
+    </div>
+  `).join('');
+}
+
+function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+
+function selectClient(id){
+  activeId=id;
+  renderClients();
+  renderMain();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function renderMain(){
+  const c=clients.find(x=>x.id===activeId);
+  if(!c){return}
+  const tips=PROFILE_TIPS[c.profile]||[];
+  const done=c.steps||[];
+
+  const stepsHtml=STEPS_BASE.map((s,i)=>{
+    const isDone=done.includes(i);
+    const isActive=!isDone&&(i===0||done.includes(i-1));
+    const quote=s.useOpening?(c.opening||'—'):s.quote;
+    return `<div class="step ${isDone?'done':''} ${isActive?'active-step':''}" onclick="toggleStep(${c.id},${i})">
+      <div class="step-n">${isDone?'✓':(i+1)}</div>
+      <div style="flex:1">
+        <div class="step-title">${s.title}</div>
+        <div class="step-hint">${s.hint}</div>
+        ${quote?`<div class="step-quote">${quote}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const objsHtml=(c.objs||[]).map((o,i)=>`
+    <div class="obj" id="obj-${i}" onclick="toggleObj(${i})">
+      <div class="obj-trigger">${o.q}<span class="obj-arrow">▾</span></div>
+      <div class="obj-reply">${o.a}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('main-content').innerHTML=`
+    <div class="profile-bar">
+      <div class="profile-avatar" style="background:${c.color}22;color:${c.color}">${initials(c.name)}</div>
+      <div><div class="profile-name">${c.name}</div><div class="profile-sub">${c.biz} · Perfil ${c.profile}</div></div>
+      <div class="profile-tags">
+        <span class="ptag dom">${c.profile}</span>
+        <span class="ptag mot">↑ ${c.mot}</span>
+        <span class="ptag warn">✕ ${c.hate}</span>
+      </div>
+      <button class="edit-btn" onclick="openEditClient(${c.id})">editar</button>
+    </div>
+
+    <div>
+      <div class="sec-label">Abordagem — perfil ${c.profile}</div>
+      <div class="tips-row">${tips.map(t=>`<span class="tip-tag">${t}</span>`).join('')}</div>
+    </div>
+
+    <div>
+      <div class="sec-label">Roteiro da call — clique para avançar</div>
+      <div class="steps">${stepsHtml}</div>
+      <button class="reset-btn" onclick="resetSteps(${c.id})">↺ Reiniciar roteiro</button>
+    </div>
+
+    <div>
+      <div class="sec-label">Propostas</div>
+      <div class="proposals">
+        <div class="prop">
+          <div class="prop-price">${c.p1name||'Proposta 1'}</div>
+          <div class="prop-items">${(c.p1desc||'').split('\n').filter(Boolean).map(l=>`<div class="prop-item">${l}</div>`).join('')}</div>
+        </div>
+        <div class="prop recommended">
+          <div class="prop-badge">RECOMENDADA</div>
+          <div class="prop-price">${c.p2name||'Proposta 2'}</div>
+          <div class="prop-items">${(c.p2desc||'').split('\n').filter(Boolean).map(l=>`<div class="prop-item">${l}</div>`).join('')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-label">Objeções — clique para ver a resposta</div>
+      <div class="obj-grid">${objsHtml}</div>
+    </div>
+    <div style="height:20px"></div>
+  `;
+}
+
+function toggleStep(clientId,i){
+  const c=clients.find(x=>x.id===clientId);
+  if(!c.steps)c.steps=[];
+  c.steps=c.steps.includes(i)?c.steps.filter(s=>s!==i):[...c.steps,i];
+  save();renderMain();
+}
+
+function resetSteps(clientId){
+  const c=clients.find(x=>x.id===clientId);
+  c.steps=[];save();renderMain();
+}
+
+function toggleObj(i){document.getElementById('obj-'+i).classList.toggle('open')}
+
+function openNewClient(){
+  editingId=null;
+  document.getElementById('modal-title').textContent='Novo cliente';
+  ['name','biz','mot','hate','pain','opening','p1name','p1desc','p2name','p2desc'].forEach(f=>document.getElementById('f-'+f).value='');
+  document.getElementById('f-profile').value='Dominante';
+  document.getElementById('f-objs').value='"Tá caro" | Sua resposta aqui\n"Deixa eu pensar" | Sua resposta aqui';
+  document.getElementById('modal-actions').innerHTML=`
+    <button class="btn-sm" onclick="closeModal()">Cancelar</button>
+    <button class="btn-sm accent" onclick="saveClient()">Salvar</button>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function openEditClient(id){
+  editingId=id;
+  const c=clients.find(x=>x.id===id);
+  document.getElementById('modal-title').textContent='Editar cliente';
+  document.getElementById('f-name').value=c.name||'';
+  document.getElementById('f-biz').value=c.biz||'';
+  document.getElementById('f-profile').value=c.profile||'Dominante';
+  document.getElementById('f-mot').value=c.mot||'';
+  document.getElementById('f-hate').value=c.hate||'';
+  document.getElementById('f-pain').value=c.pain||'';
+  document.getElementById('f-opening').value=c.opening||'';
+  document.getElementById('f-p1name').value=c.p1name||'';
+  document.getElementById('f-p1desc').value=c.p1desc||'';
+  document.getElementById('f-p2name').value=c.p2name||'';
+  document.getElementById('f-p2desc').value=c.p2desc||'';
+  document.getElementById('f-objs').value=(c.objs||[]).map(o=>`${o.q} | ${o.a}`).join('\n');
+  document.getElementById('modal-actions').innerHTML=`
+    <button class="btn-sm danger" onclick="deleteClient(${id})">Excluir</button>
+    <button class="btn-sm" onclick="closeModal()">Cancelar</button>
+    <button class="btn-sm accent" onclick="saveClient()">Salvar</button>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show')}
+
+function deleteClient(id){
+  if(!confirm('Excluir este cliente?'))return;
+  clients=clients.filter(x=>x.id!==id);
+  if(activeId===id)activeId=null;
+  save();closeModal();renderClients();
+  document.getElementById('main-content').innerHTML=`<div class="empty"><div style="font-size:32px;margin-bottom:4px">◎</div><div style="font-size:14px;color:var(--text2)">Selecione um cliente</div></div>`;
+}
+
+function saveClient(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name)return alert('Informe o nome do cliente');
+  const objRaw=document.getElementById('f-objs').value.trim().split('\n').filter(Boolean);
+  const objs=objRaw.map(l=>{const p=l.split('|');return{q:(p[0]||'').trim(),a:(p[1]||'').trim()}}).filter(o=>o.q&&o.a);
+  const data={
+    name,biz:document.getElementById('f-biz').value,
+    profile:document.getElementById('f-profile').value,
+    mot:document.getElementById('f-mot').value,
+    hate:document.getElementById('f-hate').value,
+    pain:document.getElementById('f-pain').value,
+    opening:document.getElementById('f-opening').value,
+    p1name:document.getElementById('f-p1name').value,
+    p1desc:document.getElementById('f-p1desc').value,
+    p2name:document.getElementById('f-p2name').value,
+    p2desc:document.getElementById('f-p2desc').value,
+    objs
+  };
+  if(editingId){Object.assign(clients.find(x=>x.id===editingId),data)}
+  else{const id=Date.now();clients.push({id,color:COLORS[clients.length%COLORS.length],steps:[],...data});activeId=id}
+  save();closeModal();renderClients();if(activeId)renderMain();
+}
+
+renderClients();
+if(clients.length)selectClient(clients[0].id);
+</script>
+</body>
+</html>
