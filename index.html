@@ -98,6 +98,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .reset-btn{margin-top:4px;padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font);width:100%;transition:all .15s}
 .reset-btn:hover{border-color:var(--border2);color:var(--text2)}
 
+/* PALESTRA */
+.palestra-blocks{display:flex;flex-direction:column;gap:6px}
+.pblock{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;gap:12px;align-items:flex-start}
+.pblock.interval{background:transparent;border:1px dashed var(--border);justify-content:center;padding:10px 14px}
+.pblock.closing{border-color:var(--accent);background:rgba(200,255,0,.04)}
+.pblock-time{font-family:var(--mono);font-size:11px;color:var(--accent);min-width:40px;flex-shrink:0;padding-top:2px}
+.pblock-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.pblock-body{font-size:12px;color:var(--text2);line-height:1.6}
+.pblock-interval-label{font-size:12px;color:var(--text3);font-family:var(--mono);letter-spacing:.04em}
+
 /* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;padding:20px}
 .overlay.show{display:flex}
@@ -280,6 +290,34 @@ function renderMain(){
     </div>
   `).join('');
 
+  const DANIEL_PALESTRA=[
+    {time:'45min',title:'Bloco 1 — Quem sou eu?',body:'Apresentação do perfil comportamental. Cada um responde o mapeamento. Revelar o perfil de cada um de forma geral. Objetivo: curiosidade e identificação.',type:'block'},
+    {time:'45min',title:'Bloco 2 — Como eu me comunico?',body:'Como cada perfil age no trabalho, o que motiva, o que trava. Dinâmica: cada um fala uma situação do dia a dia e o grupo identifica o perfil agindo ali.',type:'block'},
+    {time:'15min',title:'Intervalo',body:'',type:'interval'},
+    {time:'45min',title:'Bloco 3 — Como nos comunicamos?',body:'Como os perfis se relacionam e onde conflitam. Dinâmica de duplas — praticar como falar com o perfil oposto. Foco em comunicação com cliente.',type:'block'},
+    {time:'30min',title:'Bloco 4 — Como atendo melhor meu cliente?',body:'Como identificar o perfil do cliente na cadeira e adaptar a comunicação. Fidelização.',type:'block'},
+    {time:'15min',title:'Fechamento',body:'Cada um escreve uma mudança na comunicação. Daniel fala por último.',type:'closing'}
+  ];
+  const palestraBlocks=c.name==='Daniel Barber'?DANIEL_PALESTRA:(c.palestra||null);
+  const palestraHtml=palestraBlocks?`
+    <div>
+      <div class="sec-label">Palestra MPM — 3h com a equipe</div>
+      <div class="palestra-blocks">
+        ${palestraBlocks.map(b=>b.type==='interval'?`
+          <div class="pblock interval"><span class="pblock-interval-label">${b.time} — ${b.title}</span></div>
+        `:`
+          <div class="pblock ${b.type==='closing'?'closing':''}">
+            <div class="pblock-time">${b.time}</div>
+            <div style="flex:1">
+              <div class="pblock-title">${b.title}</div>
+              ${b.body?`<div class="pblock-body">${b.body}</div>`:''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `:'';
+
   document.getElementById('main-content').innerHTML=`
     <div class="profile-bar">
       <div class="profile-avatar" style="background:${c.color}22;color:${c.color}">${initials(c.name)}</div>
@@ -322,6 +360,7 @@ function renderMain(){
       <div class="sec-label">Objeções — clique para ver a resposta</div>
       <div class="obj-grid">${objsHtml}</div>
     </div>
+    ${palestraHtml}
     <div style="height:20px"></div>
   `;
 }
